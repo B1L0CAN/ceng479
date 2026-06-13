@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 process_results.py — Turn raw JMH CSV output into speedup, efficiency and
 throughput tables/graphs.
@@ -28,7 +29,7 @@ import os
 import sys
 from collections import defaultdict
 
-
+# Processes JMH benchmark results and generates speedup / efficiency outputs.
 def load_rows(path):
     rows = []
     with open(path, newline="", encoding="utf-8") as f:

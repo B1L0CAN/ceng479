@@ -323,3 +323,5 @@ This project demonstrates data-parallel image processing on multi-core CPUs usin
 threads. It implements and compares two parallelization strategies, verifies correctness against
 a sequential baseline, and uses JMH to measure speedup, efficiency, and throughput across
 multiple image sizes and thread counts, including the proposal's 4K benchmark case.
+
+# Thank You !!

@@ -35,6 +35,8 @@ import com.ceng479.imaging.util.ImageIOUtils.ImageData;
  * {@code time} mode is only a convenience sanity check and is subject to JIT
  * warm-up distortion.
  */
+
+//Final version
 public final class App {
 
     private static final Filter[] FILTERS = {

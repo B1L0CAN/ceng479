@@ -7,6 +7,11 @@ dependency-reduced-pom.xml
 build/
 out/
 
+# OS
+.DS_Store
+Thumbs.db
+
+
 # IDE
 .idea/
 *.iml
@@ -16,7 +21,4 @@ out/
 .project
 .factorypath
 
-# OS
-.DS_Store
-Thumbs.db
 
