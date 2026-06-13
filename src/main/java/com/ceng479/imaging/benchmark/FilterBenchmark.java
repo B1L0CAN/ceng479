@@ -28,17 +28,8 @@ import com.ceng479.imaging.util.ImageIOUtils;
 import com.ceng479.imaging.util.ImageIOUtils.ImageData;
 
 /**
- * JMH microbenchmark comparing the sequential baseline against the two parallel
- * implementations (ExecutorService and ForkJoinPool) across image sizes, thread
- * counts, and filters.
- *
- * <p>Why JMH instead of System.nanoTime()? JMH runs dedicated warm-up
- * iterations so the JVM fully JIT-compiles the hot loops before measurement,
- * uses {@link Blackhole} to prevent dead-code elimination of the filter output,
- * and forks a fresh JVM per configuration to avoid profile pollution. This
- * yields reproducible, defensible speedup numbers.
- *
- * <p>Measurement mode is average time per operation (lower is better).
+ * JMH microbenchmark comparing the sequential baseline against two parallel
+ * implementations: ExecutorService and ForkJoinPool.
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -48,7 +39,7 @@ import com.ceng479.imaging.util.ImageIOUtils.ImageData;
 @Fork(value = 1)
 public class FilterBenchmark {
 
-    /** Image case; includes square images and the proposal's 4K UHD size. */
+    /** Image case; includes the proposal's 4K UHD size. */
     @Param({"512x512", "1024x1024", "2048x2048", "3840x2160"})
     public String imageCase;
 
@@ -63,8 +54,8 @@ public class FilterBenchmark {
     private int[] src;
     private int width;
     private int height;
-    private Filter filter;
 
+    private Filter filter;
     private SequentialProcessor sequential;
     private ExecutorParallelProcessor executor;
     private ForkJoinParallelProcessor forkJoin;
@@ -77,6 +68,7 @@ public class FilterBenchmark {
 
         ImageData img = ImageIOUtils.generateSynthetic(width, height, 42L);
         src = img.pixels;
+
         filter = resolveFilter(filterName);
 
         sequential = new SequentialProcessor();
@@ -86,38 +78,38 @@ public class FilterBenchmark {
 
     @TearDown(Level.Trial)
     public void tearDown() {
-        executor.close();
-        forkJoin.close();
+        if (executor != null) {
+            executor.close();
+        }
+
+        if (forkJoin != null) {
+            forkJoin.close();
+        }
     }
 
     private static Filter resolveFilter(String name) {
         switch (name) {
-            case "Grayscale":       return new GrayscaleFilter();
-            case "GaussianBlur5x5": return new GaussianBlurFilter();
-            case "Sobel3x3":        return new SobelFilter();
-            default: throw new IllegalArgumentException("Unknown filter: " + name);
+            case "Grayscale":
+                return new GrayscaleFilter();
+            case "GaussianBlur5x5":
+                return new GaussianBlurFilter();
+            case "Sobel3x3":
+                return new SobelFilter();
+            default:
+                throw new IllegalArgumentException("Unknown filter: " + name);
         }
     }
 
-    // ----- Benchmarks -------------------------------------------------------
-
-    /**
-     * Sequential baseline. Note: this ignores the {@code threads} param, so JMH
-     * will report identical sequential times across thread counts (expected).
-     * The baseline at threads=1 is the reference for speedup computation.
-     */
     @Benchmark
     public void sequential(Blackhole bh) {
         bh.consume(sequential.process(src, width, height, filter));
     }
 
-    /** Parallel via fixed thread pool + strip decomposition. */
     @Benchmark
     public void executorParallel(Blackhole bh) {
         bh.consume(executor.process(src, width, height, filter));
     }
 
-    /** Parallel via ForkJoinPool work-stealing + divide-and-conquer. */
     @Benchmark
     public void forkJoinParallel(Blackhole bh) {
         bh.consume(forkJoin.process(src, width, height, filter));
